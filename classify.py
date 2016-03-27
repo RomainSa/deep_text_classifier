@@ -28,7 +28,7 @@ X_train, X_test, y_train, y_test = train_test_split(vectors, data.target, test_s
 n1 = 300
 n2 = 300
 n3 = 128
-lr = 0.001
+lr = 0.01
 batch_size = 32
 
 
@@ -86,4 +86,6 @@ for i in range(10000):
     train_step.run(feed_dict={x_: batch[0], y_: batch[1], keep_prob: 0.5})
 
 print('Test error:')
-print(1-accuracy.eval(feed_dict={x_: X_test, y_: y_test, keep_prob: 1.0}))
+print(1-accuracy.eval(feed_dict={x_: np.array(X_test.todense()),
+                                 y_: label_binarize(y_test, classes=np.arange(len(data.target_names))), keep_prob: 1.0})
+      )
