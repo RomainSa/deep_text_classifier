@@ -28,9 +28,9 @@ X_train, X_test, y_train, y_test = train_test_split(vectors, data.target, test_s
 n1 = 300
 n2 = 300
 n3 = 128
-lr = 0.01
-batch_size = 32
-n_epochs = 6
+lr = 0.001
+batch_size = 256
+n_epochs = 60
 
 
 def weight_variable(shape):
@@ -76,18 +76,18 @@ train_step = tf.train.AdamOptimizer(lr).minimize(cross_entropy)
 correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 
-sess = tf.InteractiveSession()
-sess.run(tf.initialize_all_variables())
-for i in range(n_epochs * X_train.shape[0] // batch_size + 1):
-    rand_idx = np.random.randint(low=0, high=X_train.shape[0], size=batch_size)
-    batch = np.array(X_train[rand_idx, :].todense()),\
-        label_binarize(y_train[rand_idx], classes=np.arange(len(data.target_names)))
-    if i % 100 == 0:
-        print('Step', i, 'of', n_epochs * X_train.shape[0] // batch_size + 1)
-        print('Train error:', 1-accuracy.eval(feed_dict={x_: batch[0], y_: batch[1], keep_prob: 1.0}))
-    train_step.run(feed_dict={x_: batch[0], y_: batch[1], keep_prob: 0.5})
+with tf.Session() as sess:
+    sess.run(tf.initialize_all_variables())
+    for i in range(n_epochs * X_train.shape[0] // batch_size + 1):
+        rand_idx = np.random.randint(low=0, high=X_train.shape[0], size=batch_size)
+        batch = np.array(X_train[rand_idx, :].todense()),\
+            label_binarize(y_train[rand_idx], classes=np.arange(len(data.target_names)))
+        if i % 100 == 0:
+            print('Step', i, 'of', n_epochs * X_train.shape[0] // batch_size + 1)
+            print('Train error:', 1-accuracy.eval(feed_dict={x_: batch[0], y_: batch[1], keep_prob: 1.0}))
+        train_step.run(feed_dict={x_: batch[0], y_: batch[1], keep_prob: 0.5})
 
-print('Test error:')
-print(1-accuracy.eval(feed_dict={x_: np.array(X_test.todense()),
-                                 y_: label_binarize(y_test, classes=np.arange(len(data.target_names))), keep_prob: 1.0})
-      )
+    print('Test error:')
+    print(1-accuracy.eval(feed_dict={x_: np.array(X_test.todense()),
+                                     y_: label_binarize(y_test, classes=np.arange(len(data.target_names))),
+                                     keep_prob: 1.0}))
