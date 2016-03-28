@@ -1,4 +1,6 @@
+import re
 import numpy as np
+from nltk.corpus import stopwords
 from sklearn.datasets import fetch_20newsgroups
 from sklearn.preprocessing import label_binarize
 from sklearn.feature_extraction.text import CountVectorizer
@@ -16,9 +18,32 @@ print(data.target.shape)
 print(data.target[0])
 print(data.target_names[data.target[0]])
 
+
+def preprocess(s, lowercase=True, trim=True, trim_specials=True, allowed_chars=[], forbidden_chars=[u''],
+               prefix='#', suffix='#', stopwords_list=stopwords.words('english')):
+    """
+    String data preprocessing method
+    """
+    if lowercase:
+        s = s.lower()
+    if trim:   # remove spaces and newlines
+        s = re.sub('[\s+]', ' ', s)
+    if trim_specials:   # remove special characters
+        s = ''.join(char for char in s if ((char.isalnum() or char in allowed_chars or char == ' ') and \
+                    char not in forbidden_chars))
+    if len(prefix) > 0 or len(suffix) > 0 or len(stopwords) > 0 or len(forbidden_chars) > 0:
+        s = ' '.join([prefix + word + suffix for word in s.split(' ') if word not in forbidden_chars and \
+                      word not in stopwords_list])
+    return s
+
+
+data.data = [preprocess(s) for s in data.data]
+
+
+print(data.data[0])
+
 # turns data into character 3-grams vectors
-vectorizer = CountVectorizer(input='content', analyzer='char', ngram_range=(3, 3), stop_words='english',
-                             lowercase=True, min_df=0.001, max_df=0.9)
+vectorizer = CountVectorizer(input='content', analyzer='char', ngram_range=(3, 3))
 vectors = vectorizer.fit_transform(data.data)
 
 # splits data between train and test
@@ -29,7 +54,7 @@ n1 = 300
 n2 = 300
 n3 = 128
 lr = 0.001
-batch_size = 256
+batch_size = 64
 n_epochs = 60
 
 
