@@ -39,9 +39,6 @@ def preprocess(s, lowercase=True, trim=True, trim_specials=True, allowed_chars=[
 
 data.data = [preprocess(s) for s in data.data]
 
-
-print(data.data[0])
-
 # turns data into character 3-grams vectors
 vectorizer = CountVectorizer(input='content', analyzer='char', ngram_range=(3, 3))
 vectors = vectorizer.fit_transform(data.data)
